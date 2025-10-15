@@ -7,7 +7,7 @@ export default function Navbar () {
     const { isOpen, onOpen, onClose } = useDisclosure();
     return (
         <>
-        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Create Contact"} />
+        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact"} />
         <div className="w-full flex justify-center text-black/50">
             <div className="py-2 px-12 w-full flex justify-between items-center">
                 <div className="flex gap-2">
