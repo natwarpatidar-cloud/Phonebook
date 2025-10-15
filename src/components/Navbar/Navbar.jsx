@@ -6,16 +6,18 @@ import { useEffect, useState } from "react";
 import { useDebounce } from '../../hooks/useDebounce';
 import { useDispatch } from "react-redux";
 import { setSearchQuery } from "../../context/contactSlice";
+import FilterModal from "../Modal/FilterModal";
 
 export default function Navbar () {
 
     const dispatch = useDispatch();
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
     const [search, setSearch] = useState("");
     const debounceVal = useDebounce(search, 1000);
 
-    function onSearch (value) {
-        dispatch(setSearchQuery(value));  
+    function onSearch (val) {
+        dispatch(setSearchQuery(val));  
     }
 
     useEffect(() => {
@@ -24,11 +26,18 @@ export default function Navbar () {
         }
     }, [onSearch, debounceVal]);
 
+    useEffect(() => {
+        if(search == "") {
+            dispatch(setSearchQuery(search));
+        };
+    }, [search]);
+
     return (
         <>
+        <FilterModal onClose={onFilterClose} isOpen={isFilterOpen} />
         <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact form"} buttonText={"Add contact"}/>
         <div className="w-full flex justify-center text-black/70 font-semibold text-lg">
-            <div className="py-2 px-12 w-full flex justify-between items-center">
+            <div className="py-2 w-full flex justify-between items-center">
                 <div className="flex gap-2">
                     <CircleUserRound />
                     <span>Phonebook</span>
@@ -42,7 +51,7 @@ export default function Navbar () {
                 </div>
 
                 <div className="flex gap-3 items-center">
-                    <FilterIcon className="cursor-pointer" />
+                    <FilterIcon className="cursor-pointer" onClick={onFilterOpen} />
                     <div className="border border-black/10 shadow-lg px-3 py-2 cursor-pointer rounded-2xl flex items-center gap-1" onClick={onOpen}>
                         <img src={Plus} className="h-5 w-5 filter" />
                         <button className="text-black/70">

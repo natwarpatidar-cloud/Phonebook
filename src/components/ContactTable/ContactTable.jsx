@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector } from 'react-redux';
 import {
   Table,
@@ -9,23 +9,27 @@ import {
   Td,
   TableContainer,
   useDisclosure,
+  Tag,
 } from '@chakra-ui/react';
 import ContactModal from "../Modal/ContactModal";
-import { Edit2, Trash } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import ConfirmationModal from "../Modal/ConfirmationModal";
 
 export default function ContactTable() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
 
-    const contacts = useSelector(state => state.contacts.contacts);
+    const data = useSelector(state => state.contacts.contacts);
+    const label = useSelector(state => state.contacts.label);
     const searchQuery = useSelector(state => state.contacts.searchQuery);
 
     const [contact, setContact] = useState(null);
 
-    const filteredContacts = contacts.filter(contact =>
+    const contacts = data.filter(contact =>
         contact.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
 
     function handleEditFormOpen(c) {
         setContact(c);
@@ -41,7 +45,7 @@ export default function ContactTable() {
         <>
         <ContactModal onClose={onClose} onOpen={onOpen} isOpen={isOpen} title={"Edit contact form"} buttonText={"Edit contact"} data={contact} />
         <ConfirmationModal onClose={onConfirmationClose} isOpen={isConfirmationOpen} data={contact} />
-        
+
         <TableContainer>
             <Table variant='simple'>
                 <Thead>
@@ -52,10 +56,10 @@ export default function ContactTable() {
                     </Tr>
                 </Thead>
 
-                <Tr>
-                    <Td className="text-sm text-gray-500">CONTACTS ({filteredContacts.length})</Td>
-                </Tr>
                 <Tbody>
+                    <Tr>
+                        <Td className="text-xs text-gray-500">CONTACTS ({filteredContacts?.length})</Td>
+                    </Tr>
                     {
                         filteredContacts.map((contact) => {
                             return (
@@ -66,9 +70,14 @@ export default function ContactTable() {
                                     </Td>
                                     <Td>{contact.phone}</Td>
 
-                                    <Td className="flex gap-2">
-                                        <Edit2 size={18} onClick={() => handleEditFormOpen(contact)} />
-                                        <Trash size={18} className="text-red-300" onClick={() => handleDeleteFormOpen(contact)} />
+                                    <Td className="flex items-center justify-around">
+                                        <div className="flex gap-2">
+                                            <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
+                                            <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <Tag colorScheme='teal'>{contact.label}</Tag>
+                                        </div>
                                     </Td>
                                 </Tr>
                             );

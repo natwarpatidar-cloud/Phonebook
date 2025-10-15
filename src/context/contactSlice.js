@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 const initialState = {
   contacts: JSON.parse(localStorage.getItem('contacts')) || [],
   searchQuery: '',
-  label: '',
+  label: 'school',
 };
 
 const contactSlice = createSlice({
@@ -34,5 +34,5 @@ const contactSlice = createSlice({
   }
 });
 
-export const { addContact, removeContact, editContact, setSearchQuery } = contactSlice.actions;
+export const { addContact, removeContact, editContact, setSearchQuery, setLabel } = contactSlice.actions;
 export default contactSlice.reducer;
