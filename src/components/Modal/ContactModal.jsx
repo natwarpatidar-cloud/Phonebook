@@ -13,46 +13,70 @@ import {
   Select,
   FormErrorMessage,
 } from '@chakra-ui/react'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addContact } from '../../context/contactReducer';
+import { addContact, editContact } from '../../context/contactSlice';
 
-export default function ContactModal({ isOpen, onOpen, onClose, title }) {
+export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
   const dispatch = useDispatch();
+
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    avatar: null,
-    label: ""
+    name: data?.name || '',
+    phone: data?.phone || '',
+    address: data?.address || '',
+    avatar: data?.avatar || null,
+    label: data?.label || ''
   });
+
+  const [avatarPreview, setAvatarPreview] = useState(data?.avatar || null);
 
   const [errors, setErrors] = useState({});
 
-  function handleAddContact() {
+  function handleSubmit() {
     const newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.name?.trim()) newErrors.name = "Name is required";
+    if (!formData.phone?.trim()) newErrors.phone = "Phone number is required";
+    if (!formData.address?.trim()) newErrors.address = "Address is required";
     if (!formData.avatar) newErrors.avatar = "Avatar is required";
-    if (!formData.label.trim()) newErrors.label = "Tag is required";
+    if (!formData.label?.trim()) newErrors.label = "Tag is required";
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       console.log("Form Submitted:", formData);
-      dispatch(addContact(formData));
+
+      if(data) {
+        dispatch(editContact(formData));
+      } else {
+        dispatch(addContact(formData));
+      }
       setFormData({
         name: "",
         phone: "",
         address: "",
         avatar: null,
         label: ""
-      })
-      onClose(); 
+      });
+      setAvatarPreview(null);
+      onClose();
+      setErrors({});
     }
   }
+
+  const [isChangingAvatar, setIsChangingAvatar] = useState(false);
+
+  useEffect(() => {
+    setFormData({
+      name: data?.name || '',
+      phone: data?.phone || '',
+      address: data?.address || '',
+      avatar: data?.avatar || null,
+      label: data?.label || ''
+    });
+    setIsChangingAvatar(false);
+    setErrors({});
+  }, [data, isOpen]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -62,7 +86,7 @@ export default function ContactModal({ isOpen, onOpen, onClose, title }) {
         <ModalCloseButton />
 
         <ModalBody>
-          <FormControl className='flex flex-col gap-2'>
+          <FormControl className="flex flex-col gap-4">
 
             <FormControl isInvalid={errors.name}>
               <FormLabel>Name</FormLabel>
@@ -79,6 +103,7 @@ export default function ContactModal({ isOpen, onOpen, onClose, title }) {
               <FormLabel>Phone no.</FormLabel>
               <Input
                 type='tel'
+                placeholder='Enter phone number'
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
@@ -98,10 +123,30 @@ export default function ContactModal({ isOpen, onOpen, onClose, title }) {
 
             <FormControl isInvalid={errors.avatar}>
               <FormLabel>Avatar</FormLabel>
-              <Input
-                type='file'
-                onChange={(e) => setFormData({ ...formData, avatar: e.target.files[0] })}
-              />
+
+              {avatarPreview && !isChangingAvatar ? (
+                <div className='flex flex-col items-center'>
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar Preview"
+                    style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', marginBottom: 8 }}
+                  />
+                  <Button size="sm" onClick={() => setIsChangingAvatar(true)}>
+                    Change Avatar
+                  </Button>
+                </div>
+              ) : (
+                <Input
+                  type='file'
+                  accept='image/*'
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setFormData({ ...formData, avatar: e.target.files[0] });
+                      setIsChangingAvatar(false);
+                    }
+                  }}
+                />
+              )}
               {errors.avatar && <FormErrorMessage>{errors.avatar}</FormErrorMessage>}
             </FormControl>
 
@@ -127,7 +172,7 @@ export default function ContactModal({ isOpen, onOpen, onClose, title }) {
           <Button variant='ghost' colorScheme='red' mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme='blue' onClick={handleAddContact}>Add contact</Button>
+          <Button colorScheme='blue' onClick={handleSubmit}>{buttonText}</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

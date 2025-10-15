@@ -7,7 +7,7 @@ export default function Navbar () {
     const { isOpen, onOpen, onClose } = useDisclosure();
     return (
         <>
-        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact"} />
+        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact form"} buttonText={"Add contact"}/>
         <div className="w-full flex justify-center text-black/50">
             <div className="py-2 px-12 w-full flex justify-between items-center">
                 <div className="flex gap-2">
@@ -22,9 +22,9 @@ export default function Navbar () {
                     </div>
                 </div>
 
-                <div className="flex gap-3 items-center" onClick={onOpen}>
-                    <FilterIcon className="" />
-                    <div className="border border-black/10 shadow-lg px-3 py-2 rounded-2xl flex items-center gap-1">
+                <div className="flex gap-3 items-center">
+                    <FilterIcon className="cursor-pointer" />
+                    <div className="border border-black/10 shadow-lg px-3 py-2 cursor-pointer rounded-2xl flex items-center gap-1" onClick={onOpen}>
                         <img src={Plus} className="h-5 w-5 filter" />
                         <button className="text-black/70">
                             Create contact
