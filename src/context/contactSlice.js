@@ -2,7 +2,9 @@ import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
-  contacts: JSON.parse(localStorage.getItem('contacts')) || []
+  contacts: JSON.parse(localStorage.getItem('contacts')) || [],
+  searchQuery: '',
+  label: '',
 };
 
 const contactSlice = createSlice({
@@ -22,9 +24,15 @@ const contactSlice = createSlice({
       if (index !== -1) {
         state.contacts[index] = { ...state.contacts[index], ...updatedData };
       }
+    },
+    setSearchQuery(state, action) {
+      state.searchQuery = action.payload;
+    },
+    setLabel(state, action) {
+      state.label = action.payload;
     }
   }
 });
 
-export const { addContact, removeContact, editContact } = contactSlice.actions;
+export const { addContact, removeContact, editContact, setSearchQuery } = contactSlice.actions;
 export default contactSlice.reducer;

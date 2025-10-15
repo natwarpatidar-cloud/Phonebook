@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import { useSelector } from 'react-redux';
 import {
   Table,
@@ -9,25 +9,23 @@ import {
   Td,
   TableContainer,
   useDisclosure,
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
 import ContactModal from "../Modal/ContactModal";
 import { Edit2, Trash } from "lucide-react";
 import ConfirmationModal from "../Modal/ConfirmationModal";
 
-
 export default function ContactTable() {
-    const [contacts, setContacts] = useState([]);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
-    const data = useSelector(state => state.contacts.contacts);
+
+    const contacts = useSelector(state => state.contacts.contacts);
+    const searchQuery = useSelector(state => state.contacts.searchQuery);
 
     const [contact, setContact] = useState(null);
-    
-    useEffect(() => {
-        if(data) {
-            setContacts(data);
-        }
-    }, [data]);
+
+    const filteredContacts = contacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     function handleEditFormOpen(c) {
         setContact(c);
@@ -43,6 +41,7 @@ export default function ContactTable() {
         <>
         <ContactModal onClose={onClose} onOpen={onOpen} isOpen={isOpen} title={"Edit contact form"} buttonText={"Edit contact"} data={contact} />
         <ConfirmationModal onClose={onConfirmationClose} isOpen={isConfirmationOpen} data={contact} />
+        
         <TableContainer>
             <Table variant='simple'>
                 <Thead>
@@ -54,11 +53,11 @@ export default function ContactTable() {
                 </Thead>
 
                 <Tr>
-                    <Td className="text-sm text-gray-500">CONTACTS ({contacts.length})</Td>
+                    <Td className="text-sm text-gray-500">CONTACTS ({filteredContacts.length})</Td>
                 </Tr>
                 <Tbody>
                     {
-                        contacts?.map((contact) => {
+                        filteredContacts.map((contact) => {
                             return (
                                 <Tr key={contact.id} className="hover:bg-gray-300">
                                     <Td className="flex gap-2 items-center">
