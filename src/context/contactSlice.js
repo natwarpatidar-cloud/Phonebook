@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 const initialState = {
   contacts: JSON.parse(localStorage.getItem('contacts')) || [],
   searchQuery: '',
-  label: 'school',
+  label: '',
 };
 
 const contactSlice = createSlice({

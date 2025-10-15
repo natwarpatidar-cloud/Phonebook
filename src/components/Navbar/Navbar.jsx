@@ -1,5 +1,5 @@
 import { CircleUserRound, FilterIcon, Search } from "lucide-react";
-import Plus from '../../../public/plus.webp';
+import Plus from '../../../public/plus.png';
 import { useDisclosure } from "@chakra-ui/react";
 import ContactModal from "../Modal/ContactModal";
 import { useEffect, useState } from "react";
@@ -52,8 +52,8 @@ export default function Navbar () {
 
                 <div className="flex gap-3 items-center">
                     <FilterIcon className="cursor-pointer" onClick={onFilterOpen} />
-                    <div className="border border-black/10 shadow-lg px-3 py-2 cursor-pointer rounded-2xl flex items-center gap-1" onClick={onOpen}>
-                        <img src={Plus} className="h-5 w-5 filter" />
+                    <div className="border border-black/10 shadow-lg px-3 py-2 cursor-pointer rounded-2xl flex items-center" onClick={onOpen}>
+                        <img src={Plus} className="h-10 w-10 filter" />
                         <button className="text-black/70">
                             Create contact
                         </button>

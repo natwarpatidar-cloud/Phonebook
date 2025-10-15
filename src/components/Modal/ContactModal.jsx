@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addContact, editContact } from '../../context/contactSlice';
+import { uploadImageToCloudinary } from '../../utils/imageUpload';
 
 export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
   const dispatch = useDispatch();
@@ -32,7 +33,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
 
   const [errors, setErrors] = useState({});
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const newErrors = {};
 
     if (!formData.name?.trim()) newErrors.name = "Name is required";
@@ -40,6 +41,12 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     if (!formData.address?.trim()) newErrors.address = "Address is required";
     if (!formData.avatar) newErrors.avatar = "Avatar is required";
     if (!formData.label?.trim()) newErrors.label = "Tag is required";
+
+    const url = await uploadImageToCloudinary(formData.avatar);
+    console.log(url);
+    if(url){
+      setFormData({ ...formData, avatar: url });
+    }
 
     setErrors(newErrors);
 

@@ -49,10 +49,9 @@ export default function ContactTable() {
         <TableContainer>
             <Table variant='simple'>
                 <Thead>
-                    <Tr>
-                        <Th>Name</Th>
-                        <Th>Phone Number</Th>
-                        <Th></Th>
+                    <Tr className="w-full flex justify-between">
+                        <Th className="w-full">Name</Th>
+                        <Th className="w-full">Phone Number</Th>
                     </Tr>
                 </Thead>
 
@@ -63,14 +62,14 @@ export default function ContactTable() {
                     {
                         filteredContacts.map((contact) => {
                             return (
-                                <Tr key={contact.id} className="hover:bg-gray-300">
-                                    <Td className="flex gap-2 items-center">
+                                <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
+                                    <Td className="flex gap-2 items-center w-1/2">
                                         <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
                                         {contact.name}
                                     </Td>
-                                    <Td>{contact.phone}</Td>
 
-                                    <Td className="flex items-center justify-around">
+                                    <Td className="w-1/2 flex justify-between">
+                                        <p>{contact.phone}</p>
                                         <div className="flex gap-2">
                                             <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
                                             <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
@@ -79,6 +78,7 @@ export default function ContactTable() {
                                             <Tag colorScheme='teal'>{contact.label}</Tag>
                                         </div>
                                     </Td>
+
                                 </Tr>
                             );
                         })
