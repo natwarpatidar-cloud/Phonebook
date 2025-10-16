@@ -13,10 +13,13 @@ import {
   filter,
 } from '@chakra-ui/react';
 import ContactModal from "../Modal/ContactModal";
-import { Edit, Trash2 } from "lucide-react";
+import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
 import ConfirmationModal from "../Modal/ConfirmationModal";
+import { useDispatch } from "react-redux";
+import { toggleBookmark } from "../../context/contactSlice";
 
 export default function ContactTable() {
+    const dispatch = useDispatch();
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
 
@@ -44,9 +47,14 @@ export default function ContactTable() {
         onConfirmationOpen();
     }
 
+    function handleBookmark(c) {
+        dispatch(toggleBookmark(c.id));
+    }
+
     return (
         <>
         <ContactModal onClose={onClose} onOpen={onOpen} isOpen={isOpen} title={"Edit contact form"} buttonText={"Edit contact"} data={contact} />
+        
         <ConfirmationModal onClose={onConfirmationClose} isOpen={isConfirmationOpen} data={contact} />
 
         <TableContainer>
@@ -74,10 +82,19 @@ export default function ContactTable() {
                                     </Td>
 
                                     <Td className="w-1/2 flex justify-between">
-                                        <p>{contact.phone}</p>
-                                        <div className="flex gap-2">
-                                            <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
-                                            <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
+                                        <p className="w-full">{contact.phone}</p>
+                                        <div className="w-full flex gap-2 justify-around">
+                                            {
+                                                contact.bookmark === false? (
+                                                    <BookmarkPlus size={18} className="text-blue-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
+                                                ): (
+                                                    <BookmarkMinus size={18} className="text-red-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
+                                                )
+                                            }
+                                            <div className="flex gap-2">
+                                                <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
+                                                <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
+                                            </div>
                                         </div>
                                         <div>
                                             <Tag colorScheme='teal'>{contact.label}</Tag>

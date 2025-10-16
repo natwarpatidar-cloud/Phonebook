@@ -12,7 +12,7 @@ const contactSlice = createSlice({
   initialState,
   reducers: {
     addContact(state, action) {
-      const newContact = { id: uuidv4(), ...action.payload };
+      const newContact = { id: uuidv4(), bookmarked: false, ...action.payload };
       state.contacts.push(newContact);
     },
     removeContact(state, action) {
@@ -30,9 +30,15 @@ const contactSlice = createSlice({
     },
     setLabel(state, action) {
       state.label = action.payload;
+    },
+    toggleBookmark(state, action) {
+      const contact = state.contacts.find(contact => contact.id === action.payload);
+      if (contact) {
+        contact.bookmarked = !contact.bookmarked;
+      }
     }
   }
 });
 
-export const { addContact, removeContact, editContact, setSearchQuery, setLabel } = contactSlice.actions;
+export const { addContact, removeContact, editContact, setSearchQuery, setLabel, toggleBookmark } = contactSlice.actions;
 export default contactSlice.reducer;

@@ -12,79 +12,95 @@ import {
   Input,
   Select,
   FormErrorMessage,
-} from '@chakra-ui/react'
+  Image,
+} from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addContact, editContact } from '../../context/contactSlice';
 import { uploadImageToCloudinary } from '../../utils/imageUpload';
+import { LucideLoader } from 'lucide-react';
 
 export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
-    name: data?.name || '',
-    phone: data?.phone || '',
-    address: data?.address || '',
-    avatar: data?.avatar || null,
-    label: data?.label || '',
-    url: data?.url || "",
+    name: '',
+    phone: '',
+    address: '',
+    avatar: null,
+    label: '',
+    url: '',       
   });
 
   const [errors, setErrors] = useState({});
-
-  async function handleSubmit() {
-    const newErrors = {};
-
-    if (!formData.name?.trim()) newErrors.name = "Name is required";
-    if (!formData.phone?.trim()) newErrors.phone = "Phone number is required";
-    if (!formData.address?.trim()) newErrors.address = "Address is required";
-    if (!formData.avatar) newErrors.avatar = "Avatar is required";
-    if (!formData.label?.trim()) newErrors.label = "Tag is required";
-
-    console.log(formData);
-    const url = await uploadImageToCloudinary(formData.avatar);
-    
-    if(!url) {
-      throw new Error("Url not found");
-    }
-
-    const newFormData = {...formData, url: url};
-    delete newFormData['avatar'];
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      console.log("Form Submitted:", newFormData);
-
-      if(data) {
-        dispatch(editContact(newFormData));
-      } else {
-        dispatch(addContact(newFormData));
-      }
-      setFormData({
-        name: "",
-        phone: "",
-        address: "",
-        avatar: null,
-        label: "",
-        url: "",
-      });
-      onClose();
-      setErrors({});
-    }
-  }
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
-    setFormData({
-      name: data?.name || '',
-      phone: data?.phone || '',
-      address: data?.address || '',
-      avatar: data?.avatar || null,
-      label: data?.label || '',
-      url: data?.url || "",
-    });
-    setErrors({});
-  }, [data, isOpen]);
+    if (isOpen) {
+      setFormData({
+        name: data?.name || '',
+        phone: data?.phone || '',
+        address: data?.address || '',
+        avatar: null,
+        label: data?.label || '',
+        url: data?.url || '',
+      });
+      setPreviewImage(data?.url || null);
+      setErrors({});
+    }
+  }, [isOpen, data]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, avatar: file });
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    if (!formData.label.trim()) newErrors.label = 'Tag is required';
+    if (!formData.url && !formData.avatar) newErrors.avatar = 'Avatar is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setIsPending(true);
+
+    let imageUrl = formData.url;
+
+    if (formData.avatar) {
+      const uploadedUrl = await uploadImageToCloudinary(formData.avatar);
+      if (!uploadedUrl) {
+        setErrors(prev => ({ ...prev, avatar: 'Failed to upload image' }));
+        return;
+      }
+      imageUrl = uploadedUrl;
+    }
+
+    const payload = {
+      ...formData,
+      url: imageUrl,
+    };
+    delete payload.avatar;
+
+    if (data) {
+      dispatch(editContact(payload));
+    } else {
+      dispatch(addContact(payload));
+    }
+    setIsPending(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -92,59 +108,68 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
-
         <ModalBody>
           <FormControl className="flex flex-col gap-4">
 
-            <FormControl isInvalid={errors.name}>
+            <FormControl isInvalid={errors.name} mb={3}>
               <FormLabel>Name</FormLabel>
               <Input
                 type='text'
-                placeholder='Enter your name'
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder='Enter your name'
               />
-              {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
+              <FormErrorMessage>{errors.name}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={errors.phone}>
-              <FormLabel>Phone no.</FormLabel>
+            <FormControl isInvalid={errors.phone} mb={3}>
+              <FormLabel>Phone No.</FormLabel>
               <Input
                 type='tel'
-                placeholder='Enter phone number'
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder='Enter phone number'
               />
-              {errors.phone && <FormErrorMessage>{errors.phone}</FormErrorMessage>}
+              <FormErrorMessage>{errors.phone}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={errors.address}>
+            <FormControl isInvalid={errors.address} mb={3}>
               <FormLabel>Address</FormLabel>
               <Input
                 type='text'
-                placeholder='Enter city/address'
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder='Enter city/address'
               />
-              {errors.address && <FormErrorMessage>{errors.address}</FormErrorMessage>}
+              <FormErrorMessage>{errors.address}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={errors.avatar}>
+            <FormControl isInvalid={errors.avatar} mb={3}>
               <FormLabel>Avatar</FormLabel>
-                <Input
-                  type='file'
-                  accept='image/*'
-                  onChange={(e) => {
-                    setFormData({ ...formData, avatar: e.target.files[0] })
-                  }}
+
+              {previewImage && (
+                <Image
+                  src={previewImage}
+                  alt='Preview'
+                  boxSize='100px'
+                  objectFit='cover'
+                  borderRadius='md'
+                  mb={2}
                 />
-              {errors.avatar && <FormErrorMessage>{errors.avatar}</FormErrorMessage>}
+              )}
+
+              <Input
+                type='file'
+                accept='image/*'
+                onChange={handleImageChange}
+              />
+              <FormErrorMessage>{errors.avatar}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={errors.label}>
+            <FormControl isInvalid={errors.label} mb={3}>
               <FormLabel>Select Tag</FormLabel>
               <Select
-                placeholder='Tag'
+                placeholder='Select tag'
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
               >
@@ -153,7 +178,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
                 <option value='friends'>Friends</option>
                 <option value='family'>Family</option>
               </Select>
-              {errors.label && <FormErrorMessage>{errors.label}</FormErrorMessage>}
+              <FormErrorMessage>{errors.label}</FormErrorMessage>
             </FormControl>
 
           </FormControl>
@@ -163,7 +188,10 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
           <Button variant='ghost' colorScheme='red' mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme='blue' onClick={handleSubmit}>{buttonText}</Button>
+          <Button colorScheme='blue' onClick={handleSubmit} disable={isPending}>
+            {buttonText}
+            { isPending && <LucideLoader className='animate-spin' />}
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
