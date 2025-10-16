@@ -1,15 +1,12 @@
 import axios from 'axios';
 
 export async function uploadImageToCloudinary(file) {
-    console.log(file)
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
     const unsignedPreset = import.meta.env.VITE_UNSIGNED_PRESET;
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', unsignedPreset);
-
-    console.log(cloudName, unsignedPreset);
 
     const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

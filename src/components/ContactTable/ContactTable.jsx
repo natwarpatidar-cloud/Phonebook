@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Table,
   Thead,
@@ -10,12 +10,10 @@ import {
   TableContainer,
   useDisclosure,
   Tag,
-  filter,
 } from '@chakra-ui/react';
 import ContactModal from "../Modal/ContactModal";
-import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
 import ConfirmationModal from "../Modal/ConfirmationModal";
-import { useDispatch } from "react-redux";
+import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
 import { toggleBookmark } from "../../context/contactSlice";
 
 export default function ContactTable() {
@@ -35,7 +33,12 @@ export default function ContactTable() {
 
     let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
 
-    filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
+    filteredContacts.sort((a, b) => {
+        if (a.bookmarked === b.bookmarked) {
+            return a.name.localeCompare(b.name);
+        }
+        return b.bookmarked - a.bookmarked;
+    });
 
     function handleEditFormOpen(c) {
         setContact(c);
@@ -53,9 +56,20 @@ export default function ContactTable() {
 
     return (
         <>
-        <ContactModal onClose={onClose} onOpen={onOpen} isOpen={isOpen} title={"Edit contact form"} buttonText={"Edit contact"} data={contact} />
+        <ContactModal
+            onClose={onClose}
+            onOpen={onOpen}
+            isOpen={isOpen}
+            title={"Edit contact form"}
+            buttonText={"Edit contact"}
+            data={contact}
+        />
         
-        <ConfirmationModal onClose={onConfirmationClose} isOpen={isConfirmationOpen} data={contact} />
+        <ConfirmationModal
+            onClose={onConfirmationClose}
+            isOpen={isConfirmationOpen}
+            data={contact}
+        />
 
         <TableContainer>
             <Table variant='simple'>
@@ -71,43 +85,38 @@ export default function ContactTable() {
                         <Td className="text-xs text-gray-500">CONTACTS ({filteredContacts?.length})</Td>
                     </Tr>
                     {
-                        filteredContacts.map((contact) => {
-                            return (
-                                <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
-                                    <Td className="flex gap-2 items-center w-1/2">
+                        filteredContacts.map((contact) => (
+                            <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
+                                <Td className="flex gap-2 items-center w-1/2">
+                                    {
+                                        contact?.url
+                                            ? <img src={contact.url} className="w-8 h-8 rounded-full bg-amber-600" />
+                                            : <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
+                                    }
+                                    <p>{contact.name}</p>
+                                    <Tag className="mx-6" colorScheme='teal'>{contact.label}</Tag>
+                                </Td>
+
+                                <Td className="w-1/2 flex justify-between">
+                                    <p className="w-full">{contact.phone}</p>
+                                    <div className="w-full flex gap-2 justify-around">
                                         {
-                                            contact?.url ? <img src={contact?.url} className="w-8 h-8 rounded-full bg-amber-600" /> : <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
+                                            contact.bookmarked
+                                                ? <BookmarkMinus size={25} className="text-red-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
+                                                : <BookmarkPlus size={25} className="text-blue-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
                                         }
-                                        {contact.name}
-                                    </Td>
-
-                                    <Td className="w-1/2 flex justify-between">
-                                        <p className="w-full">{contact.phone}</p>
-                                        <div className="w-full flex gap-2 justify-around">
-                                            {
-                                                contact.bookmark === false? (
-                                                    <BookmarkPlus size={18} className="text-blue-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
-                                                ): (
-                                                    <BookmarkMinus size={18} className="text-red-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
-                                                )
-                                            }
-                                            <div className="flex gap-2">
-                                                <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
-                                                <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
-                                            </div>
+                                        <div className="flex gap-2">
+                                            <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
+                                            <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
                                         </div>
-                                        <div>
-                                            <Tag colorScheme='teal'>{contact.label}</Tag>
-                                        </div>
-                                    </Td>
-
-                                </Tr>
-                            );
-                        })
+                                    </div>
+                                </Td>
+                            </Tr>
+                        ))
                     }
                 </Tbody>
             </Table>
         </TableContainer>
         </>
-    )
+    );
 }
