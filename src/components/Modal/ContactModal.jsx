@@ -26,10 +26,9 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     phone: data?.phone || '',
     address: data?.address || '',
     avatar: data?.avatar || null,
-    label: data?.label || ''
+    label: data?.label || '',
+    url: data?.url || "",
   });
-
-  const [avatarPreview, setAvatarPreview] = useState(data?.avatar || null);
 
   const [errors, setErrors] = useState({});
 
@@ -42,36 +41,38 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     if (!formData.avatar) newErrors.avatar = "Avatar is required";
     if (!formData.label?.trim()) newErrors.label = "Tag is required";
 
+    console.log(formData);
     const url = await uploadImageToCloudinary(formData.avatar);
-    console.log(url);
-    if(url){
-      setFormData({ ...formData, avatar: url });
+    
+    if(!url) {
+      throw new Error("Url not found");
     }
+
+    const newFormData = {...formData, url: url};
+    delete newFormData['avatar'];
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form Submitted:", formData);
+      console.log("Form Submitted:", newFormData);
 
       if(data) {
-        dispatch(editContact(formData));
+        dispatch(editContact(newFormData));
       } else {
-        dispatch(addContact(formData));
+        dispatch(addContact(newFormData));
       }
       setFormData({
         name: "",
         phone: "",
         address: "",
         avatar: null,
-        label: ""
+        label: "",
+        url: "",
       });
-      setAvatarPreview(null);
       onClose();
       setErrors({});
     }
   }
-
-  const [isChangingAvatar, setIsChangingAvatar] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -79,9 +80,9 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
       phone: data?.phone || '',
       address: data?.address || '',
       avatar: data?.avatar || null,
-      label: data?.label || ''
+      label: data?.label || '',
+      url: data?.url || "",
     });
-    setIsChangingAvatar(false);
     setErrors({});
   }, [data, isOpen]);
 
@@ -130,30 +131,13 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
 
             <FormControl isInvalid={errors.avatar}>
               <FormLabel>Avatar</FormLabel>
-
-              {avatarPreview && !isChangingAvatar ? (
-                <div className='flex flex-col items-center'>
-                  <img
-                    src={avatarPreview}
-                    alt="Avatar Preview"
-                    style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', marginBottom: 8 }}
-                  />
-                  <Button size="sm" onClick={() => setIsChangingAvatar(true)}>
-                    Change Avatar
-                  </Button>
-                </div>
-              ) : (
                 <Input
                   type='file'
                   accept='image/*'
                   onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setFormData({ ...formData, avatar: e.target.files[0] });
-                      setIsChangingAvatar(false);
-                    }
+                    setFormData({ ...formData, avatar: e.target.files[0] })
                   }}
                 />
-              )}
               {errors.avatar && <FormErrorMessage>{errors.avatar}</FormErrorMessage>}
             </FormControl>
 

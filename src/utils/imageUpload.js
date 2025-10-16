@@ -1,24 +1,20 @@
-export async function uploadImageToCloudinary(file) {
-    const cloudName = import.meta.env.CLOUD_NAME;
-    const unsignedPreset = "phonebook";
+import axios from 'axios';
 
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+export async function uploadImageToCloudinary(file) {
+    console.log(file)
+    const cloudName = import.meta.env.VITE_CLOUD_NAME;
+    const unsignedPreset = import.meta.env.VITE_UNSIGNED_PRESET;
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", unsignedPreset);
-    formData.append('cloud_name', cloudName);
+    formData.append('file', file);
+    formData.append('upload_preset', unsignedPreset);
 
-    const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-    });
+    console.log(cloudName, unsignedPreset);
 
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Upload failed: ${res.status} ${text}`);
-    }
+    const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        formData
+    );
 
-    const data = await res.json();
-    return data.secure_url;
+    return response.data.secure_url;
 }

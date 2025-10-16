@@ -64,7 +64,9 @@ export default function ContactTable() {
                             return (
                                 <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
                                     <Td className="flex gap-2 items-center w-1/2">
-                                        <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
+                                        {
+                                            contact?.url ? <img src={contact?.url} className="w-8 h-8 rounded-full bg-amber-600" /> : <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
+                                        }
                                         {contact.name}
                                     </Td>
 

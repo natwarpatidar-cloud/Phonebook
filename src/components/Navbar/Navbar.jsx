@@ -1,5 +1,5 @@
 import { CircleUserRound, FilterIcon, Search } from "lucide-react";
-import Plus from '../../../public/plus.png';
+import Plus from '/plus.png';
 import { useDisclosure } from "@chakra-ui/react";
 import ContactModal from "../Modal/ContactModal";
 import { useEffect, useState } from "react";
