@@ -10,6 +10,7 @@ import {
   TableContainer,
   useDisclosure,
   Tag,
+  filter,
 } from '@chakra-ui/react';
 import ContactModal from "../Modal/ContactModal";
 import { Edit, Trash2 } from "lucide-react";
@@ -30,6 +31,8 @@ export default function ContactTable() {
     );
 
     let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
+
+    filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
 
     function handleEditFormOpen(c) {
         setContact(c);
