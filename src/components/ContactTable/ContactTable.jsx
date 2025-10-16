@@ -15,11 +15,13 @@ import ContactModal from "../Modal/ContactModal";
 import ConfirmationModal from "../Modal/ConfirmationModal";
 import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
 import { toggleBookmark } from "../../context/contactSlice";
+import ContactDetailsModal from "../Modal/ContactDetailsModal";
 
 export default function ContactTable() {
     const dispatch = useDispatch();
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
+    const { isOpen: isContactDetailsModalOpen, onOpen: onContactDetailsModalOpen, onClose: onContactDetailsModalClose } = useDisclosure();
 
     const data = useSelector(state => state.contacts.contacts);
     const label = useSelector(state => state.contacts.label);
@@ -54,8 +56,20 @@ export default function ContactTable() {
         dispatch(toggleBookmark(c.id));
     }
 
+    function handleContactDetails(c) {
+        setContact(c);
+        onContactDetailsModalOpen();
+    }
+
     return (
         <>
+
+        <ContactDetailsModal 
+            onClose={onContactDetailsModalClose}
+            isOpen={isContactDetailsModalOpen}
+            data={contact}
+        />
+
         <ContactModal
             onClose={onClose}
             onOpen={onOpen}
@@ -87,7 +101,7 @@ export default function ContactTable() {
                     {
                         filteredContacts.map((contact) => (
                             <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
-                                <Td className="flex gap-2 items-center w-1/2">
+                                <Td className="flex gap-2 items-center w-1/2 hover:bg-gray-300 cursor-pointer" onClick={() => handleContactDetails(contact)}>
                                     {
                                         contact?.url
                                             ? <img src={contact.url} className="w-8 h-8 rounded-full bg-amber-600" />
@@ -99,15 +113,15 @@ export default function ContactTable() {
 
                                 <Td className="w-1/2 flex justify-between">
                                     <p className="w-full">{contact.phone}</p>
-                                    <div className="w-full flex gap-2 justify-around">
+                                    <div className="w-full flex gap-2 justify-around items-center">
                                         {
                                             contact.bookmarked
                                                 ? <BookmarkMinus size={25} className="text-red-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
                                                 : <BookmarkPlus size={25} className="text-blue-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
                                         }
                                         <div className="flex gap-2">
-                                            <Edit size={18} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
-                                            <Trash2 size={18} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
+                                            <Edit size={20} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
+                                            <Trash2 size={20} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
                                         </div>
                                     </div>
                                 </Td>
