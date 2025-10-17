@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Table,
@@ -19,6 +19,8 @@ import ContactDetailsModal from "../Modal/ContactDetailsModal";
 
 export default function ContactTable() {
     const dispatch = useDispatch();
+    const dragItem = useRef();
+    const dragOverItem = useRef();
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
     const { isOpen: isContactDetailsModalOpen, onOpen: onContactDetailsModalOpen, onClose: onContactDetailsModalClose } = useDisclosure();
@@ -28,6 +30,7 @@ export default function ContactTable() {
     const searchQuery = useSelector(state => state.contacts.searchQuery);
 
     const [contact, setContact] = useState(null);
+    const [displayContacts, setDisplayContacts] = useState([]);
 
     const contacts = data.filter(contact =>
         contact.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -35,12 +38,16 @@ export default function ContactTable() {
 
     let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
 
-    filteredContacts.sort((a, b) => {
-        if (a.bookmarked === b.bookmarked) {
-            return a.name.localeCompare(b.name);
-        }
-        return b.bookmarked - a.bookmarked;
-    });
+    useEffect(() => {
+        setDisplayContacts(filteredContacts);
+    }, [data, label, searchQuery]);
+
+    // filteredContacts.sort((a, b) => {
+    //     if (a.bookmarked === b.bookmarked) {
+    //         return a.name.localeCompare(b.name);
+    //     }
+    //     return b.bookmarked - a.bookmarked;
+    // });
 
     function handleEditFormOpen(c) {
         setContact(c);
@@ -52,13 +59,41 @@ export default function ContactTable() {
         onConfirmationOpen();
     }
 
-    function handleBookmark(c) {
-        dispatch(toggleBookmark(c.id));
-    }
+    // function handleBookmark(c) {
+    //     dispatch(toggleBookmark(c.id));
+    // }
 
     function handleContactDetails(c) {
         setContact(c);
         onContactDetailsModalOpen();
+    }
+
+    function handleDragStart(e, index) {
+        dragItem.current = index;
+    }
+    function handlerDragEnter(e, index) {
+        dragOverItem.current = index;
+        e.preventDefault();
+    }
+
+    function handleDragEnd() {
+        const newContacts = Array.from(displayContacts);
+        const draggedIndex = dragItem.current;
+        const overIndex = dragOverItem.current;
+
+        if (draggedIndex === undefined || overIndex === undefined || draggedIndex === overIndex) {
+            dragItem.current = null;
+            dragOverItem.current = null;
+            return;
+        }
+
+        const [draggedItem] = newContacts.splice(draggedIndex, 1);
+        newContacts.splice(overIndex, 0, draggedItem);
+
+        dragItem.current = null;
+        dragOverItem.current = null;
+
+        setDisplayContacts(newContacts);
     }
 
     return (
@@ -94,13 +129,21 @@ export default function ContactTable() {
                     </Tr>
                 </Thead>
 
-                <Tbody>
+                <Tbody className="dndcontainer">
                     <Tr>
                         <Td className="text-xs text-gray-500">CONTACTS ({filteredContacts?.length})</Td>
                     </Tr>
                     {
-                        filteredContacts.map((contact) => (
-                            <Tr key={contact.id} className="hover:bg-gray-200 w-full flex justify-between">
+                        displayContacts.map((contact, index) => (
+                            <Tr 
+                                key={contact.id || index} 
+                                className="hover:bg-gray-200 w-full flex justify-between" 
+                                draggable={true} 
+                                onDragStart={(e) => handleDragStart(e, index)}
+                                onDragEnter={(e) => handlerDragEnter(e, index)}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={(e) => e.preventDefault()}
+                            >
                                 <Td className="flex gap-2 items-center w-1/2 hover:bg-gray-300 cursor-pointer" onClick={() => handleContactDetails(contact)}>
                                     {
                                         contact?.url
@@ -114,11 +157,11 @@ export default function ContactTable() {
                                 <Td className="w-1/2 flex justify-between">
                                     <p className="w-full">{contact.phone}</p>
                                     <div className="w-full flex gap-2 justify-around items-center">
-                                        {
+                                        {/* {
                                             contact.bookmarked
                                                 ? <BookmarkMinus size={25} className="text-red-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
                                                 : <BookmarkPlus size={25} className="text-blue-500 cursor-pointer" onClick={() => handleBookmark(contact)} />
-                                        }
+                                        } */}
                                         <div className="flex gap-2">
                                             <Edit size={20} onClick={() => handleEditFormOpen(contact)} className="cursor-pointer" />
                                             <Trash2 size={20} onClick={() => handleDeleteFormOpen(contact)} className="cursor-pointer" />
