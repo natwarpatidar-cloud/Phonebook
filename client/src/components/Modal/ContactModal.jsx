@@ -1,0 +1,199 @@
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  FormErrorMessage,
+  Image,
+} from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { addContact, editContact } from '../../context/contactSlice';
+import { uploadImageToCloudinary } from '../../utils/imageUpload';
+import { LucideLoader } from 'lucide-react';
+
+export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
+  const dispatch = useDispatch();
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    avatar: null,
+    label: '',
+    url: '',       
+  });
+
+  const [errors, setErrors] = useState({});
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: data?.name || '',
+        phone: data?.phone || '',
+        address: data?.address || '',
+        avatar: null,
+        label: data?.label || '',
+        url: data?.url || '',
+      });
+      setPreviewImage(data?.url || null);
+      setErrors({});
+    }
+  }, [isOpen, data]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, avatar: file });
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    if (!formData.label.trim()) newErrors.label = 'Tag is required';
+    if (!formData.url && !formData.avatar) newErrors.avatar = 'Avatar is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setIsPending(true);
+
+    let imageUrl = formData.url;
+
+    if (formData.avatar) {
+      const uploadedUrl = await uploadImageToCloudinary(formData.avatar);
+      if (!uploadedUrl) {
+        setErrors(prev => ({ ...prev, avatar: 'Failed to upload image' }));
+        return;
+      }
+      imageUrl = uploadedUrl;
+    }
+
+    const payload = {
+      ...formData,
+      url: imageUrl,
+    };
+    delete payload.avatar;
+
+    if (data) {
+      dispatch(editContact(payload));
+    } else {
+      dispatch(addContact(payload));
+    }
+    setIsPending(false);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>{title}</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <FormControl className="flex flex-col gap-4">
+
+            <FormControl isInvalid={errors.name} mb={3}>
+              <FormLabel>Name</FormLabel>
+              <Input
+                type='text'
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder='Enter your name'
+              />
+              <FormErrorMessage>{errors.name}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.phone} mb={3}>
+              <FormLabel>Phone No.</FormLabel>
+              <Input
+                type='tel'
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder='Enter phone number'
+              />
+              <FormErrorMessage>{errors.phone}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.address} mb={3}>
+              <FormLabel>Address</FormLabel>
+              <Input
+                type='text'
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder='Enter city/address'
+              />
+              <FormErrorMessage>{errors.address}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.avatar} mb={3}>
+              <FormLabel>Avatar</FormLabel>
+
+              {previewImage && (
+                <Image
+                  src={previewImage}
+                  alt='Preview'
+                  boxSize='100px'
+                  objectFit='cover'
+                  borderRadius='md'
+                  mb={2}
+                />
+              )}
+
+              <Input
+                type='file'
+                accept='image/*'
+                onChange={handleImageChange}
+              />
+              <FormErrorMessage>{errors.avatar}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.label} mb={3}>
+              <FormLabel>Select Tag</FormLabel>
+              <Select
+                placeholder='Select tag'
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+              >
+                <option value='work'>Work</option>
+                <option value='school'>School</option>
+                <option value='friends'>Friends</option>
+                <option value='family'>Family</option>
+              </Select>
+              <FormErrorMessage>{errors.label}</FormErrorMessage>
+            </FormControl>
+
+          </FormControl>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant='ghost' colorScheme='red' mr={3} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button colorScheme='blue' onClick={handleSubmit} disable={isPending}>
+            {buttonText}
+            { isPending && <LucideLoader className='animate-spin' />}
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+}
