@@ -63,10 +63,10 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data,
 
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if(formData.phone.length !== 10) newErrors.phone = 'Phone number should be of 10 digits'
     if (!formData.address.trim()) newErrors.address = 'Address is required';
     if (!formData.label.trim()) newErrors.label = 'Tag is required';
-    if (!formData.avatar) newErrors.avatar = 'Avatar is required';
-
+    // if (!formData.avatar) newErrors.avatar = 'Avatar is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -152,7 +152,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data,
                 onChange={handleImageChange}
                 disabled={isPending}
               />
-              <FormErrorMessage>{errors.avatar}</FormErrorMessage>
+              {/* <FormErrorMessage>{errors.avatar}</FormErrorMessage> */}
             </FormControl>
 
             <FormControl isInvalid={errors.label} mb={3}>
