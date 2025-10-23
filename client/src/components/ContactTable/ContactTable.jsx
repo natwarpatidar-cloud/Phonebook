@@ -19,7 +19,7 @@ import ContactDetailsModal from "../Modal/ContactDetailsModal";
 import { getAllContactsRequest } from "../../apis/contacts";
 
 export default function ContactTable() {
-    // const dispatch = useDispatch();
+    const dispatch = useDispatch();
     const dragItem = useRef();
     const dragOverItem = useRef();
 
