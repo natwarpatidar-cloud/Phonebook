@@ -15,13 +15,14 @@ import {
   Image,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { addContact, editContact } from '../../context/contactSlice';
+import { useDispatch, useSelector } from 'react-redux';
+// import { addContact, editContact } from '../../context/contactSlice';
 import { uploadImageToCloudinary } from '../../utils/imageUpload';
 import { LucideLoader } from 'lucide-react';
+import { createContactRequest, updateContactRequest } from '../../apis/contacts';
 
 export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,6 +36,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
   const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
   const [isPending, setIsPending] = useState(false);
+  const token = useSelector(state => state.auth.token);
 
   useEffect(() => {
     if (isOpen) {
@@ -94,9 +96,11 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     delete payload.avatar;
 
     if (data) {
-      dispatch(editContact(payload));
+      await updateContactRequest({...payload, avatar: imageUrl }, data._id, token);
+      // dispatch(editContact(payload));
     } else {
-      dispatch(addContact(payload));
+      await createContactRequest(payload, token);
+      // dispatch(addContact(payload));
     }
     setIsPending(false);
     onClose();
@@ -118,6 +122,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder='Enter your name'
+                disabled={isPending}
               />
               <FormErrorMessage>{errors.name}</FormErrorMessage>
             </FormControl>
@@ -127,6 +132,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
               <Input
                 type='tel'
                 value={formData.phone}
+                disabled={isPending}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder='Enter phone number'
               />
@@ -138,6 +144,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
               <Input
                 type='text'
                 value={formData.address}
+                disabled={isPending}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder='Enter city/address'
               />
@@ -162,6 +169,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
                 type='file'
                 accept='image/*'
                 onChange={handleImageChange}
+                disabled={isPending}
               />
               <FormErrorMessage>{errors.avatar}</FormErrorMessage>
             </FormControl>
@@ -171,6 +179,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
               <Select
                 placeholder='Select tag'
                 value={formData.label}
+                disabled={isPending}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
               >
                 <option value='work'>Work</option>
@@ -185,10 +194,10 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
         </ModalBody>
 
         <ModalFooter>
-          <Button variant='ghost' colorScheme='red' mr={3} onClick={onClose}>
+          <Button variant='ghost' colorScheme='red' mr={3} onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
-          <Button colorScheme='blue' onClick={handleSubmit} disable={isPending}>
+          <Button colorScheme='blue' onClick={handleSubmit} disabled={isPending}>
             {buttonText}
             { isPending && <LucideLoader className='animate-spin' />}
           </Button>

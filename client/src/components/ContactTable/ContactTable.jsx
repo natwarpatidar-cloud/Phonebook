@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Table,
@@ -14,29 +14,69 @@ import {
 import ContactModal from "../Modal/ContactModal";
 import ConfirmationModal from "../Modal/ConfirmationModal";
 import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
-import { toggleBookmark } from "../../context/contactSlice";
+// import { toggleBookmark } from "../../context/contactSlice";
 import ContactDetailsModal from "../Modal/ContactDetailsModal";
+import { getAllContactsRequest } from "../../apis/contacts";
 
 export default function ContactTable() {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const dragItem = useRef();
     const dragOverItem = useRef();
+
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isConfirmationOpen, onOpen: onConfirmationOpen, onClose: onConfirmationClose } = useDisclosure();
     const { isOpen: isContactDetailsModalOpen, onOpen: onContactDetailsModalOpen, onClose: onContactDetailsModalClose } = useDisclosure();
 
-    const data = useSelector(state => state.contacts.contacts);
-    const label = useSelector(state => state.contacts.label);
-    const searchQuery = useSelector(state => state.contacts.searchQuery);
-
+    const [data, setData] = useState(null);
     const [contact, setContact] = useState(null);
     const [displayContacts, setDisplayContacts] = useState([]);
 
-    const contacts = data.filter(contact =>
-        contact.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // const data = useSelector(state => state.contacts.contacts);
+    const label = useSelector(state => state.contacts.label);
+    const token = useSelector(state => state.auth.token);
+    const searchQuery = useSelector(state => state.contacts.searchQuery);
 
-    let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
+    // const contacts = data?.filter(contact =>
+    //     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
+    // let filteredContacts = (label !== '') ? contacts.filter(contact => contact.label === label) : contacts;
+
+    async function getContacts() {
+        try {
+            const res = await getAllContactsRequest(token); 
+            if (Array.isArray(res.contacts)) {
+                setData(res.contacts);
+            } else if (res?.data) {
+                setData(res.data);
+            } else {
+                console.error("Unexpected response format:", res);
+            }
+        } catch (error) {
+            console.log("Error in getContacts: ", error);
+        }
+    }
+
+    useEffect(() => {
+        if (token) {
+            getContacts();
+        }
+    }, []);
+
+    const filteredContacts = useMemo(() => {
+        if (!data) return [];
+        let contacts = data;
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            contacts = contacts?.filter((c) => c.name?.toLowerCase().includes(query));
+        }
+
+        if (label) {
+            contacts = contacts?.filter((c) => c.label === label);
+        }
+
+        return contacts?.sort((a, b) => a.name.localeCompare(b.name));
+    }, [data, label, searchQuery]);
 
     useEffect(() => {
         setDisplayContacts(filteredContacts);
@@ -48,26 +88,23 @@ export default function ContactTable() {
     //     }
     //     return b.bookmarked - a.bookmarked;
     // });
-
+    
+    // function handleBookmark(c) {
+    //     dispatch(toggleBookmark(c.id));
+    // }
+        
     function handleEditFormOpen(c) {
         setContact(c);
         onOpen();
     }
-
     function handleDeleteFormOpen(c) {
         setContact(c);
         onConfirmationOpen();
     }
-
-    // function handleBookmark(c) {
-    //     dispatch(toggleBookmark(c.id));
-    // }
-
     function handleContactDetails(c) {
         setContact(c);
         onContactDetailsModalOpen();
     }
-
     function handleDragStart(e, index) {
         dragItem.current = index;
     }
@@ -75,7 +112,6 @@ export default function ContactTable() {
         dragOverItem.current = index;
         e.preventDefault();
     }
-
     function handleDragEnd() {
         const newContacts = Array.from(displayContacts);
         const draggedIndex = dragItem.current;
@@ -134,7 +170,7 @@ export default function ContactTable() {
                         <Td className="text-xs text-gray-500">CONTACTS ({filteredContacts?.length})</Td>
                     </Tr>
                     {
-                        displayContacts.map((contact, index) => (
+                        displayContacts?.map((contact, index) => (
                             <Tr 
                                 key={contact.id || index} 
                                 className="hover:bg-gray-200 w-full flex justify-between" 
@@ -146,8 +182,8 @@ export default function ContactTable() {
                             >
                                 <Td className="flex gap-2 items-center w-1/2 hover:bg-gray-300 cursor-pointer" onClick={() => handleContactDetails(contact)}>
                                     {
-                                        contact?.url
-                                            ? <img src={contact.url} className="w-8 h-8 rounded-full bg-amber-600" />
+                                        contact?.avatar
+                                            ? <img src={contact.avatar} className="w-8 h-8 rounded-full bg-amber-600" />
                                             : <img src={`https://robohash.org/${contact.name}`} className="w-8 h-8 rounded-full bg-amber-600" />
                                     }
                                     <p>{contact.name}</p>

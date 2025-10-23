@@ -45,10 +45,9 @@ export default function Login() {
         
         try {
             const res = await loginRequest(formData);
-            console.log(res);
             if(res) {
                 setIsSuccess(true);
-                dispatch(setToken({ token: res.token }));
+                dispatch(setToken({ token: res.token, user: res._id }));
             }
         } catch (error) {
             setValidationError("Login failed. Please try again.");

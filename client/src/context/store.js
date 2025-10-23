@@ -9,9 +9,4 @@ const store = configureStore({
   }
 });
 
-store.subscribe(() => {
-  const state = store.getState();
-  localStorage.setItem('contacts', JSON.stringify(state.contacts.contacts));
-});
-
 export default store;

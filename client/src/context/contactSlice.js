@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
-  contacts: JSON.parse(localStorage.getItem('contacts')) || [],
+  // contacts: JSON.parse(localStorage.getItem('contacts')) || [],
+  contacts: [],
   searchQuery: '',
   label: '',
 };

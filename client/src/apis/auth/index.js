@@ -3,7 +3,6 @@ import axiosConfig from '../../config/axiosConfig';
 export const signupRequest = async (data) => {
     try {
         const res = await axiosConfig.post('/user/signup', data);
-        console.log(res);
         return res.data.data;
     } catch (error) {
         console.log("Error in signupRequest", error);
@@ -14,7 +13,6 @@ export const signupRequest = async (data) => {
 export const loginRequest = async (data) => {
     try {
         const res = await axiosConfig.post('/user/login', data);
-        console.log(res);
         return res.data.data;
     } catch (error) {
         console.log("Error in loginRequest", error);
