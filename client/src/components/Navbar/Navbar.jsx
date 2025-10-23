@@ -1,4 +1,4 @@
-import { CircleUserRound, FilterIcon, Search } from "lucide-react";
+import { CircleUserRound, FilterIcon, LogOutIcon, Search } from "lucide-react";
 import Plus from '/plus.png';
 import { useDisclosure } from "@chakra-ui/react";
 import ContactModal from "../Modal/ContactModal";
@@ -7,6 +7,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useDispatch } from "react-redux";
 import { setRefreshKey, setSearchQuery } from "../../context/contactSlice";
 import FilterModal from "../Modal/FilterModal";
+import { logout } from '../../context/authSlice';
 
 export default function Navbar () {
 
@@ -59,6 +60,9 @@ export default function Navbar () {
                         <button className="text-black/70">
                             Create contact
                         </button>
+                    </div>
+                    <div className="cursor-pointer hover:bg-cyan-100 p-2 rounded-xl" onClick={() => dispatch(logout())}>
+                        <LogOutIcon />
                     </div>
                 </div>
             </div>
