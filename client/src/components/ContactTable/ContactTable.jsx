@@ -14,7 +14,7 @@ import {
 import ContactModal from "../Modal/ContactModal";
 import ConfirmationModal from "../Modal/ConfirmationModal";
 import { BookmarkMinus, BookmarkPlus, Edit, Trash2 } from "lucide-react";
-// import { toggleBookmark } from "../../context/contactSlice";
+import { setRefreshKey } from "../../context/contactSlice";
 import ContactDetailsModal from "../Modal/ContactDetailsModal";
 import { getAllContactsRequest } from "../../apis/contacts";
 
@@ -35,6 +35,7 @@ export default function ContactTable() {
     const label = useSelector(state => state.contacts.label);
     const token = useSelector(state => state.auth.token);
     const searchQuery = useSelector(state => state.contacts.searchQuery);
+    const refreshKey = useSelector(state => state.contacts.refreshKey);
 
     // const contacts = data?.filter(contact =>
     //     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -46,8 +47,6 @@ export default function ContactTable() {
             const res = await getAllContactsRequest(token); 
             if (Array.isArray(res.contacts)) {
                 setData(res.contacts);
-            } else if (res?.data) {
-                setData(res.data);
             } else {
                 console.error("Unexpected response format:", res);
             }
@@ -60,7 +59,7 @@ export default function ContactTable() {
         if (token) {
             getContacts();
         }
-    }, []);
+    }, [token, refreshKey]);
 
     const filteredContacts = useMemo(() => {
         if (!data) return [];
@@ -148,12 +147,14 @@ export default function ContactTable() {
             title={"Edit contact form"}
             buttonText={"Edit contact"}
             data={contact}
+            onSuccess={() => dispatch(setRefreshKey(1))}
         />
         
         <ConfirmationModal
             onClose={onConfirmationClose}
             isOpen={isConfirmationOpen}
             data={contact}
+            onSuccess={() => dispatch(setRefreshKey(1))}
         />
 
         <TableContainer>

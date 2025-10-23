@@ -5,7 +5,7 @@ import ContactModal from "../Modal/ContactModal";
 import { useEffect, useState } from "react";
 import { useDebounce } from '../../hooks/useDebounce';
 import { useDispatch } from "react-redux";
-import { setSearchQuery } from "../../context/contactSlice";
+import { setRefreshKey, setSearchQuery } from "../../context/contactSlice";
 import FilterModal from "../Modal/FilterModal";
 
 export default function Navbar () {
@@ -35,7 +35,7 @@ export default function Navbar () {
     return (
         <>
         <FilterModal onClose={onFilterClose} isOpen={isFilterOpen} />
-        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact form"} buttonText={"Add contact"}/>
+        <ContactModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} title={"Add contact form"} buttonText={"Add contact"} onSuccess={() => dispatch(setRefreshKey(1))} />
         <div className="w-full flex justify-center text-black/70 font-semibold text-lg">
             <div className="py-2 w-full flex justify-between items-center mt-4">
                 <div className="flex gap-2">

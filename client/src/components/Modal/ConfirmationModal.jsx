@@ -14,7 +14,7 @@ import { deleteContactRequest } from '../../apis/contacts';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 
-export default function ConfirmationModal ({ isOpen, onClose, data }) {
+export default function ConfirmationModal ({ isOpen, onClose, data, onSuccess }) {
     // const dispatch = useDispatch();
     const token = useSelector(state => state.auth.token);
     const [isPending, setIsPending] = useState(false);
@@ -22,6 +22,7 @@ export default function ConfirmationModal ({ isOpen, onClose, data }) {
     async function confirmDelete() {
         setIsPending(true);
         await deleteContactRequest(data?._id, token);
+        onSuccess();
         // dispatch(removeContact(data.id));
         onClose();
         setIsPending(false);

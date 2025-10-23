@@ -17,11 +17,10 @@ import {
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // import { addContact, editContact } from '../../context/contactSlice';
-import { uploadImageToCloudinary } from '../../utils/imageUpload';
 import { LucideLoader } from 'lucide-react';
 import { createContactRequest, updateContactRequest } from '../../apis/contacts';
 
-export default function ContactModal({ isOpen, onClose, title, buttonText, data }) {
+export default function ContactModal({ isOpen, onClose, title, buttonText, data, onSuccess }) {
   // const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
@@ -29,8 +28,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     phone: '',
     address: '',
     avatar: null,
-    label: '',
-    url: '',       
+    label: '',      
   });
 
   const [errors, setErrors] = useState({});
@@ -44,11 +42,10 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
         name: data?.name || '',
         phone: data?.phone || '',
         address: data?.address || '',
-        avatar: null,
         label: data?.label || '',
-        url: data?.url || '',
+        avatar: data?.avatar || '',
       });
-      setPreviewImage(data?.url || null);
+      setPreviewImage(data?.avatar || null);
       setErrors({});
     }
   }, [isOpen, data]);
@@ -68,7 +65,7 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     if (!formData.address.trim()) newErrors.address = 'Address is required';
     if (!formData.label.trim()) newErrors.label = 'Tag is required';
-    if (!formData.url && !formData.avatar) newErrors.avatar = 'Avatar is required';
+    if (!formData.avatar) newErrors.avatar = 'Avatar is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -78,30 +75,14 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data 
     if (!validate()) return;
     setIsPending(true);
 
-    let imageUrl = formData.url;
-
-    if (formData.avatar) {
-      const uploadedUrl = await uploadImageToCloudinary(formData.avatar);
-      if (!uploadedUrl) {
-        setErrors(prev => ({ ...prev, avatar: 'Failed to upload image' }));
-        return;
-      }
-      imageUrl = uploadedUrl;
-    }
-
-    const payload = {
-      ...formData,
-      url: imageUrl,
-    };
-    delete payload.avatar;
-
     if (data) {
-      await updateContactRequest({...payload, avatar: imageUrl }, data._id, token);
+      await updateContactRequest(formData, data._id, token);
       // dispatch(editContact(payload));
     } else {
-      await createContactRequest(payload, token);
+      await createContactRequest(formData, token);
       // dispatch(addContact(payload));
     }
+    if(onSuccess) onSuccess();
     setIsPending(false);
     onClose();
   };

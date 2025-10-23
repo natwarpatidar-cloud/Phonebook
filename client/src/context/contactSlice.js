@@ -2,10 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
-  // contacts: JSON.parse(localStorage.getItem('contacts')) || [],
   contacts: [],
   searchQuery: '',
   label: '',
+  refreshKey: 0
 };
 
 const contactSlice = createSlice({
@@ -37,9 +37,12 @@ const contactSlice = createSlice({
       if (contact) {
         contact.bookmarked = !contact.bookmarked;
       }
+    },
+    setRefreshKey(state, action) {
+      state.refreshKey += action.payload
     }
   }
 });
 
-export const { addContact, removeContact, editContact, setSearchQuery, setLabel, toggleBookmark } = contactSlice.actions;
+export const { addContact, removeContact, editContact, setSearchQuery, setLabel, toggleBookmark, setRefreshKey } = contactSlice.actions;
 export default contactSlice.reducer;

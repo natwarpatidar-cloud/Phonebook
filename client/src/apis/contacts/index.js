@@ -4,7 +4,8 @@ export const createContactRequest = async (data, token) => {
     try {
         const res = await axiosConfig.post('/contacts', data, {
             headers: {
-                'x-access-token': token
+                'x-access-token': token,
+                'Content-Type': 'multipart/form-data'
             }
         });
         return res.data.data;
@@ -18,7 +19,8 @@ export const updateContactRequest = async (data, contactId, token) => {
     try {
         const res = await axiosConfig.put(`/contacts/${contactId}`, data, {
             headers: {
-                'x-access-token': token
+                'x-access-token': token,
+                'Content-Type': 'multipart/form-data'
             }
         });
         return res.data.data;

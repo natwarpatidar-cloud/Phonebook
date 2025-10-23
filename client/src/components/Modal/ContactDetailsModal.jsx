@@ -21,7 +21,7 @@ export default function ContactDetailsModal ({ isOpen, onClose, data }) {
         
                 <ModalBody className='flex gap-4 items-center justify-around'>
                     <div>
-                        <img src={data?.url} className='w-30 h-30 border rounded-full' />
+                        <img src={data?.avatar} className='w-30 h-30 border rounded-full' />
                     </div>
                     <div className='space-y-2'>
                         <div className='flex gap-4'>
