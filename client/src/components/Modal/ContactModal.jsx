@@ -17,7 +17,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // import { addContact, editContact } from '../../context/contactSlice';
-import { LucideLoader } from 'lucide-react';
+import { Cross, LucideLoader, X } from 'lucide-react';
 import { createContactRequest, updateContactRequest } from '../../apis/contacts';
 
 export default function ContactModal({ isOpen, onClose, title, buttonText, data, onSuccess }) {
@@ -71,12 +71,24 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data,
     return Object.keys(newErrors).length === 0;
   };
 
+  const editValidation = () => {
+    if(formData.name === data.name && formData.phone === data.phone && formData.address === data.address && formData.label === data.label && formData.avatar === data.avatar) {
+      return true;
+    }
+  }
+
   const handleSubmit = async () => {
     if (!validate()) return;
     setIsPending(true);
 
     if (data) {
-      await updateContactRequest(formData, data._id, token);
+      if(editValidation()) {
+        setIsPending(false);
+        onClose();
+        return;
+      } else {
+        await updateContactRequest(formData, data._id, token);
+      }
       // dispatch(editContact(payload));
     } else {
       await createContactRequest(formData, token);
@@ -133,8 +145,13 @@ export default function ContactModal({ isOpen, onClose, title, buttonText, data,
             </FormControl>
 
             <FormControl isInvalid={errors.avatar} mb={3}>
-              <FormLabel>Avatar</FormLabel>
-
+              <div className='w-full flex justify-between'>
+                <FormLabel>Avatar</FormLabel>
+                <X onClick={() => {
+                  setFormData({ ...formData, avatar: null });
+                  setPreviewImage(null);
+                }} />
+              </div>
               {previewImage && (
                 <Image
                   src={previewImage}
